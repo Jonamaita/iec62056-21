@@ -74,6 +74,27 @@ class Iec6205621Client:
         """
         return self.BAUDRATES_MODE_C.get(self._switchover_baudrate_char)
 
+    def read_multiple_value(self, data_request: dict):
+        """
+        Read multiple value from a list of dict. The dictionary should has the
+        'address' key, the additional_data key is optional.
+
+        :param addresses: List[{"address":"1.8.0}, {"address":"C.1.0"}]
+        :return:
+        """
+
+        for data in data_request:
+            if "additional_data" not in data:
+                data["additional_data"] = "1"
+
+        request = messages.CommandMessage.for_multiple_read(data_request)
+        logger.info(f"Sending read requesy: {request}")
+        self.transport.send(request.to_bytes())
+
+        response = self.read_response()
+
+        return response.data()
+
     def read_single_value(self, address, additional_data="1"):
         """
         Reads a value from an address in the device.
