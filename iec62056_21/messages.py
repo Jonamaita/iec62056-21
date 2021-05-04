@@ -232,6 +232,30 @@ class CommandMessage(Iec6205621Data):
         return cls(command, command_type, data_set)
 
     @classmethod
+    def for_multiple_read(
+            cls,
+            data_request: typing.List[typing.Dict["address", "additional_data"]]
+        ):
+                
+        list_dataset = list()
+
+        if not isinstance(data_request, list):
+            raise TypeError("data request should be a list")
+
+        for data in data_request:
+            if "additional_data" not in data:
+                data["additional_data"] = ""
+            if "address" not in data:
+                raise KeyError(f"key 'address' is needed in {data}")
+
+            list_dataset.append(
+                DataSet(address=data["address"], value=data["additional_data"]))
+
+
+        data_line = DataLine(list_dataset)
+        return cls(command="R", command_type="1", data_set=data_line)
+
+    @classmethod
     def for_single_read(cls, address, additional_data=None):
         if additional_data:
             _add_data = additional_data
